@@ -5,7 +5,7 @@ using UnityEngine;
 public class StaminaFlower : MonoBehaviour
 {
 
-    public int scoreValue = 10;             // The amount added to the player's score when collecting.
+    public int staminaValue = 10;             // The amount added to the player's score when collecting.
     public bool playerOnly;
 
     void OnTriggerEnter2D(Collider2D other)
@@ -17,15 +17,15 @@ public class StaminaFlower : MonoBehaviour
             {
                 this.gameObject.SetActive(false);
                 Invoke("Respawn", 10);
-                other.gameObject.GetComponent<IStamina>().EarnStamina(4000);
+                other.gameObject.GetComponent<IStamina>().EarnStamina(staminaValue);
             }
         }
         else
         {
             if (other.gameObject.CompareTag(Tags.PLAYER))
             {
-                other.gameObject.GetComponent<IStamina>().EarnStamina(600);
                 Destroy(this.gameObject);
+                other.gameObject.GetComponent<IStamina>().EarnStamina(staminaValue);
             }
             else
                 Destroy(this.gameObject);

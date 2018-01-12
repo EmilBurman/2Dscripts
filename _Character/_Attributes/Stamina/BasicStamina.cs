@@ -20,7 +20,11 @@ public class BasicStamina : MonoBehaviour, IStamina
     {
         //Increase the stamina by the earn amount.
         if (currentStamina < maxStamina)
+        {
             currentStamina += staminaGain * Time.deltaTime;
+            if (currentStamina > maxStamina)
+                currentStamina = maxStamina;
+        }
 
         // Update the slider value
         staminaSlider.value = currentStamina;

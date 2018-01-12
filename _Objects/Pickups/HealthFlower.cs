@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class HealthFlower : MonoBehaviour {
 
-    public int scoreValue = 10;             // The amount added to the player's score when collecting.
+    public int healthValue = 10;             // The amount added to the player's score when collecting.
     public bool playerOnly;
 
     void OnTriggerEnter2D(Collider2D other)
@@ -16,14 +16,14 @@ public class HealthFlower : MonoBehaviour {
             {
                 this.gameObject.SetActive(false);
                 Invoke("Respawn", 10);
-                other.gameObject.GetComponent<IHealth>().EarnHealth(300);
+                other.gameObject.GetComponent<IHealth>().EarnHealth(healthValue);
             }
         }
         else
         {
             if (other.gameObject.CompareTag(Tags.PLAYER))
             {
-                other.gameObject.GetComponent<IHealth>().EarnHealth(300);
+                other.gameObject.GetComponent<IHealth>().EarnHealth(healthValue);
                 Destroy(this.gameObject);
             }
             else
