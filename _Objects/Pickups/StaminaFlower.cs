@@ -6,17 +6,17 @@ public class StaminaFlower : MonoBehaviour
 {
 
     public int staminaValue = 10;             // The amount added to the player's score when collecting.
-    public bool playerOnly;
+    public float respawnTime = 10;
+    public bool destroyOnOtherEntityPickup;
 
     void OnTriggerEnter2D(Collider2D other)
     {
         //Check the provided Collider2D parameter other to see if it is tagged "Player", if it is...
-        if (playerOnly)
+        if (destroyOnOtherEntityPickup)
         {
             if (other.gameObject.CompareTag(Tags.PLAYER))
             {
-                this.gameObject.SetActive(false);
-                Invoke("Respawn", 10);
+                DeactivateAndRespawn();
                 other.gameObject.GetComponent<IStamina>().EarnStamina(staminaValue);
             }
         }
@@ -24,12 +24,17 @@ public class StaminaFlower : MonoBehaviour
         {
             if (other.gameObject.CompareTag(Tags.PLAYER))
             {
-                Destroy(this.gameObject);
+                DeactivateAndRespawn();
                 other.gameObject.GetComponent<IStamina>().EarnStamina(staminaValue);
             }
             else
                 Destroy(this.gameObject);
         }
+    }
+    void DeactivateAndRespawn()
+    {
+        this.gameObject.SetActive(false);
+        Invoke("Respawn", respawnTime);
     }
     void Respawn()
     {
