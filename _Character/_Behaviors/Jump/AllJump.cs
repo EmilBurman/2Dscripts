@@ -17,6 +17,7 @@ public class AllJump : MonoBehaviour, IJump
             //Set the variables to be ready for the next jump
             stoppedGroundJump = true;
             needToReleaseJump = false;
+            actionState.Jumping = false;
         }
     }
 
@@ -24,6 +25,8 @@ public class AllJump : MonoBehaviour, IJump
     {
         jumpTimeCounter = continuousJumpTime;
         SetCanAirJump(true);
+
+        //Check if player isn't already in the process of jumping, and pressing jump
         if (jump && stoppedGroundJump && !stamina.StaminaRecharging())
         {
             needToReleaseJump = true;
@@ -35,9 +38,15 @@ public class AllJump : MonoBehaviour, IJump
 
             stoppedGroundJump = false;
             stamina.LoseStamina(groundedStaminaLoss);
+            actionState.Jumping = true;
         }
         else
             ContinuousGroundedJump();
+
+        //If player isn't moving vertically, they arent jumping
+        if (rigidbody2D.velocity.y == 0f)
+            actionState.Jumping = false;
+
     }
 
     public void Airborne(bool jump)
@@ -53,6 +62,7 @@ public class AllJump : MonoBehaviour, IJump
             else if (rigidbody2D.velocity.x < 0 && !mySpriteRenderer.flipX)
                 rigidbody2D.AddForce(Vector2.right * 4.5f, ForceMode2D.Impulse);
 
+            //Add a small inital y boost, and jump force, increase times jumped and check need to release jump.
             rigidbody2D.velocity = new Vector2(rigidbody2D.velocity.x, 2f);
             rigidbody2D.velocity = new Vector2(rigidbody2D.velocity.x, jumpForce * 1.2f);
             timesJumped++;
@@ -61,14 +71,19 @@ public class AllJump : MonoBehaviour, IJump
             //Lose stamina due to jumping
             stamina.LoseStamina(airborneStaminaLoss);
 
+            //If limit is reached, make airjump check false
             if (timesJumped >= numberOfAirJumps)
                 canAirJump = false;
+
+            //Set jumping state to true
+            actionState.Jumping = true;
         }
     }
 
     public void RightWall(bool jump)
     {
         SetCanAirJump(true);
+        actionState.Jumping = false;
         if (jump && !stamina.StaminaRecharging())
         {
             sideJump = new Vector2(-0.7f, 0.9f);
@@ -79,6 +94,7 @@ public class AllJump : MonoBehaviour, IJump
     public void LeftWall(bool jump)
     {
         SetCanAirJump(true);
+        actionState.Jumping = false;
         if (jump && !stamina.StaminaRecharging())
         {
             sideJump = new Vector2(0.7f, 0.9f);
@@ -107,6 +123,7 @@ public class AllJump : MonoBehaviour, IJump
     bool stoppedGroundJump;                         // Checks if the entity has stopped a grounded jump.
     Vector2 sideJump;                               // The angle when jumping from a wall.
     IStamina stamina;
+    IActionState actionState;
 
     void Awake()
     {
@@ -114,6 +131,7 @@ public class AllJump : MonoBehaviour, IJump
         mySpriteRenderer = GetComponent<SpriteRenderer>();
         sideJumpForce = jumpForce * 1.2f;
         stamina = GetComponent<IStamina>();
+        actionState = GetComponent<IActionState>();
     }
 
     void SetCanAirJump(bool setDoubleJump)
@@ -133,6 +151,9 @@ public class AllJump : MonoBehaviour, IJump
             rigidbody2D.velocity = new Vector2(0, 0);
             rigidbody2D.AddForce(sideJump * sideJumpForce, ForceMode2D.Impulse);
             needToReleaseJump = true;
+
+            //Set jumping state to true
+            actionState.Jumping = true;
         }
     }
 

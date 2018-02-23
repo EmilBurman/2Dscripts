@@ -63,7 +63,7 @@ public class PatrolController2D : MonoBehaviour, IController2D
     private ITerrainState stateMachine;
     public PatrolState patrolState;                     // Shows the current state of dashing.
     float horizontalDirection;
-    bool sprint;
+    bool sprint = false;
     bool attackEntity;
     LineOfSight LoS;
     // Use this for initialization

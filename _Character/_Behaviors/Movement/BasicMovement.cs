@@ -3,11 +3,13 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class HeroicMovement : MonoBehaviour, IMovement
+public class BasicMovement : MonoBehaviour, IMovement
 {
     // Interface-------------------------------------------
     public void Airborne(float horizontalAxis, bool sprint)
     {
+        actionState.Idle = false;
+        actionState.Sprinting = false;
         float airborneMovement = 0.5f;
 
         // Help change direction in the air to the right
@@ -48,18 +50,30 @@ public class HeroicMovement : MonoBehaviour, IMovement
 
         StaminaGainCheck(sprint);
 
-        if (sprint && !stamina.StaminaRecharging())
+        //Sprint
+        if (sprint && !stamina.StaminaRecharging() && rigidbody2D.velocity.x != 0)
         {
-            if (rigidbody2D.velocity.x > 0)
-                rigidbody2D.AddForce(vector2Right * (moveSpeed * sprintForceMultiplier), ForceMode2D.Force);
-            else if (rigidbody2D.velocity.x < 0)
+            // Check if going left
+            if (rigidbody2D.velocity.x < 0)
                 rigidbody2D.AddForce(vector2Left * (moveSpeed * sprintForceMultiplier), ForceMode2D.Force);
-            StaminaLossCheck(staminaLoss);
+
+            rigidbody2D.AddForce(vector2Right * (moveSpeed * sprintForceMultiplier), ForceMode2D.Force);
+            actionState.Sprinting = true;
+            stamina.LoseStamina(staminaLoss);
         }
+        else
+            actionState.Sprinting = false;
+
+        //Set idle
+        if (rigidbody2D.velocity.x == 0f && horizontalAxis == 0 && actionState.Idle == false)
+            actionState.Idle = true;
+        else if (horizontalAxis != 0 && actionState.Idle == true)
+            actionState.Idle = false;
     }
 
     public void Wallride(float horizontalAxis, bool sprint)
     {
+        actionState.Sprinting = false;
         if (!(rigidbody2D.velocity.y > -0.01f) && sprint && canWallRide)
         {
             rigidbody2D.AddForce(Vector2.up * Mathf.Abs(horizontalAxis * rigidbody2D.velocity.x * 1.3f), ForceMode2D.Impulse);
@@ -85,6 +99,7 @@ public class HeroicMovement : MonoBehaviour, IMovement
     Vector2 vector2Right;
     Vector2 vector2Left;
     IStamina stamina;
+    IActionState actionState;
 
     // Use this for initialization
     void Awake()
@@ -93,6 +108,7 @@ public class HeroicMovement : MonoBehaviour, IMovement
         rigidbody2D = GetComponent<Rigidbody2D>();
         mySpriteRenderer = GetComponent<SpriteRenderer>();
         stamina = GetComponent<IStamina>();
+        actionState = GetComponent<IActionState>();
 
         //Create own definitions for left and right
         vector2Right = new Vector2(1f, rigidbody2D.velocity.y);
@@ -108,20 +124,10 @@ public class HeroicMovement : MonoBehaviour, IMovement
         //Checks all movement and clamps it.
         if (rigidbody2D.velocity.sqrMagnitude > moveSpeed * 1.2f)
             rigidbody2D.velocity *= 0.97f;
-
-        //Harder clamp for y movement.
-        if (rigidbody2D.velocity.y < -14f)
-            rigidbody2D.velocity *= 0.97f;
     }
     void StaminaGainCheck(bool sprint)
     {
         if (!sprint && !stamina.StaminaRecharging())
             stamina.EarnStamina(staminaGain);
-    }
-
-    void StaminaLossCheck(float loseAmount)
-    {
-        if ((rigidbody2D.velocity.x > 0 || rigidbody2D.velocity.x < 0) || (rigidbody2D.velocity.y > 0 || rigidbody2D.velocity.y < 0))
-            stamina.LoseStamina(loseAmount);
     }
 }

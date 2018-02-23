@@ -13,18 +13,20 @@ public class DashMultiDirection : MonoBehaviour, IDash
 
     public void ResetDash()
     {
-        dashTimer = 0;
+        dashCooldownTimer = 0;
         dashState = DashState.Ready;
     }
     // End interface------------------------
     public DashState dashState;                     // Shows the current state of dashing.
+    [SerializeField] float dashCooldownTimer;       // Shows the current cooldown.
+    public float dashCooldownLimit;                 // Sets the cooldown of the dash in seconds.
+    public float boostSpeed;
+    public float dashDuration;
 
     //Internal variables
     new Rigidbody2D rigidbody2D;                    // Reference to the player's rigidbody.
     IHealth invulnerableState;                      // Use to stop player from taking damage while dashing
-    float dashTimer;                                // Shows the current cooldown.
-    float dashCooldownLimit = 1f;                   // Sets the cooldown of the dash in seconds.
-    float boostSpeed = 50f;
+    IActionState actionState;
     float hAxis;
     float yAxis;
     Vector2 boostSpeedRight;
@@ -37,6 +39,7 @@ public class DashMultiDirection : MonoBehaviour, IDash
         //Set the rigidbody and invulnerable components.
         rigidbody2D = GetComponent<Rigidbody2D>();
         invulnerableState = GetComponent<IHealth>();
+        actionState = GetComponent<IActionState>();
 
         //Setup for all four different directions
         boostSpeedRight = new Vector2(boostSpeed, 0);
@@ -52,14 +55,15 @@ public class DashMultiDirection : MonoBehaviour, IDash
             case DashState.Ready:
                 if (dash)
                 {
+                    actionState.Dashing = true;
                     //Get the axises
                     hAxis = horizontalAxis;
                     yAxis = verticalAxis;
                     //Check which one is larger
                     if (Mathf.Abs(hAxis) >= Mathf.Abs(yAxis))
-                        StartCoroutine(HorizontalDash(0.1f));
+                        StartCoroutine(HorizontalDash(dashDuration));
                     else if (Mathf.Abs(hAxis) < Mathf.Abs(yAxis))
-                        StartCoroutine(VerticalDash(0.1f));
+                        StartCoroutine(VerticalDash(dashDuration));
                     dashState = DashState.Dashing;
                 }
                 break;
@@ -67,18 +71,18 @@ public class DashMultiDirection : MonoBehaviour, IDash
                 //Remove the invulnerability after a short delay
                 Invoke("DelayedVulnerability", 0.1f);
                 //Set the cooldown
-                dashTimer += Time.deltaTime * 3;
-                if (dashTimer >= dashCooldownLimit)
+                dashCooldownTimer += Time.deltaTime * 3;
+                if (dashCooldownTimer >= dashCooldownLimit)
                 {
-                    dashTimer = dashCooldownLimit;
+                    dashCooldownTimer = dashCooldownLimit;
                     dashState = DashState.Cooldown;
                 }
                 break;
             case DashState.Cooldown:
-                dashTimer -= Time.deltaTime;
-                if (dashTimer <= 0)
+                dashCooldownTimer -= Time.deltaTime;
+                if (dashCooldownTimer <= 0)
                 {
-                    dashTimer = 0;
+                    dashCooldownTimer = 0;
                     dashState = DashState.Ready;
                 }
                 break;
@@ -96,6 +100,7 @@ public class DashMultiDirection : MonoBehaviour, IDash
         {
             //Make the entity invulnerable while dashing
             invulnerableState.Invulnerable(true);
+
             //Increase our "time" variable by the amount of time that it has been since the last update
             time += Time.deltaTime;
             //Checks which direction to dash towards
@@ -113,6 +118,7 @@ public class DashMultiDirection : MonoBehaviour, IDash
     IEnumerator VerticalDash(float boostDur)
     {
         float time = 0f;
+
         while (boostDur > time)
         {
             invulnerableState.Invulnerable(true);
@@ -129,5 +135,6 @@ public class DashMultiDirection : MonoBehaviour, IDash
     void DelayedVulnerability()
     {
         invulnerableState.Invulnerable(false);
+        actionState.Dashing = false;
     }
 }

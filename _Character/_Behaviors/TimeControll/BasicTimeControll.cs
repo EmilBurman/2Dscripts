@@ -9,7 +9,7 @@ public class BasicTimeControll : MonoBehaviour, ITimeControll
     {
         if (flashReverse && (timeState == TimeState.Ready))
         {
-            entity.transform.position = (positionArray[0] as PositionArray).position;
+            this.transform.position = (positionArray[0] as PositionArray).position;
             timeState = TimeState.Reversing;
             positionArray.Clear();
         }
@@ -32,12 +32,17 @@ public class BasicTimeControll : MonoBehaviour, ITimeControll
     }
     // End interface----------------
 
-    // Set which entity to track
-    public GameObject entity;
+    [Header("Cooldown variables")]
+    public float reverseCooldownLimit;
+    public float reverseTimer; 			        // Shows the current cooldown.
+
+
     public float staminaGain;
     new Rigidbody2D rigidbody2D;                        // Reference to the entity's rigidbody.
     ArrayList positionArray;
     float interpolation;
+    public GameObject tracerObject;
+    GameObject tracer;
 
     //Checks for if player is reversing
     bool isReversing = false;
@@ -45,10 +50,9 @@ public class BasicTimeControll : MonoBehaviour, ITimeControll
 
     // Cooldown and state variables
     TimeState timeState;
-    public float reverseTimer; 			        // Shows the current cooldown.
     IHealth invulnerableState;                  // Use to stop entity from taking damage while dashing
     IStamina stamina;
-    float reverseCooldownLimit = 5f;        	// Sets the cooldown of the dash in seconds.
+    IActionState actionState;
 
     //Determine how much to save
     int keyframe = 10;
@@ -63,19 +67,16 @@ public class BasicTimeControll : MonoBehaviour, ITimeControll
     Vector2 currentPosition;
     Vector2 previousPosition;
 
-    // Spawn/destory for the point of max return.
-    SpawnChildEntity returnPoint;
-
     void Awake()
     {
-        positionArray = new ArrayList();
-        positionArray.Add(new PositionArray(entity.transform.position));
-        returnPoint = GetComponent<SpawnChildEntity>();
-        invulnerableState = GetComponent<IHealth>();
         timeState = TimeState.Ready;
-        returnPoint.SpawnObject(true);
-        rigidbody2D = GetComponent<Rigidbody2D>();
+        positionArray = new ArrayList();
         stamina = GetComponent<IStamina>();
+        rigidbody2D = GetComponent<Rigidbody2D>();
+        actionState = GetComponent<IActionState>();
+        invulnerableState = GetComponent<IHealth>();
+        positionArray.Add(new PositionArray(this.transform.position));
+        SpawnTracerObject();
     }
 
     void FixedUpdate()
@@ -87,13 +88,19 @@ public class BasicTimeControll : MonoBehaviour, ITimeControll
             else
             {
                 frameCounter = 0;
-                positionArray.Add(new PositionArray(entity.transform.position));
+                positionArray.Add(new PositionArray(this.transform.position));
             }
         }
         ReverseAbility();
 
         if (positionArray.Count > 15)
             positionArray.RemoveAt(0);
+
+        //Set the action state to reversing time if true
+        if (isReversing)
+            actionState.ReversingTime = true;
+        else if (actionState.ReversingTime = true && !isReversing)
+            actionState.ReversingTime = false;
     }
 
     void RestorePositions()
@@ -117,26 +124,22 @@ public class BasicTimeControll : MonoBehaviour, ITimeControll
                 if (isReversing)
                 {
                     StartCoroutine(ReverseEntityTimeFlow());
+                    DestroyTracerObject();
                     timeState = TimeState.Reversing;
                 }
                 break;
             case TimeState.Reversing:
                 // Set the cooldown and initate cooldown state.
                 invulnerableState.Invulnerable(false);
-                reverseTimer += Time.deltaTime * 3;
-                if (reverseTimer > reverseCooldownLimit)
-                {
-                    reverseTimer = reverseCooldownLimit;
-                    returnPoint.DestroyGameObject();
-                    timeState = TimeState.Cooldown;
-                }
+                reverseTimer = reverseCooldownLimit;
+                timeState = TimeState.Cooldown;
                 break;
             case TimeState.Cooldown:
                 reverseTimer -= Time.deltaTime;
                 if (reverseTimer <= 0)
                 {
                     reverseTimer = 0;
-                    returnPoint.SpawnObject(true);
+                    SpawnTracerObject();
                     timeState = TimeState.Ready;
                 }
                 break;
@@ -163,10 +166,20 @@ public class BasicTimeControll : MonoBehaviour, ITimeControll
             }
             stamina.EarnStamina(staminaGain);
             interpolation = reverseCounter / keyframe;
-            entity.transform.position = Vector2.Lerp(previousPosition, currentPosition, 1.2f * interpolation);
+            this.transform.position = Vector2.Lerp(previousPosition, currentPosition, 1.1f * interpolation);
             yield return 0; //go to next frame
         }
         rigidbody2D.velocity = new Vector2(0, 0.5f);
+    }
+    void SpawnTracerObject()
+    {
+        tracer = Instantiate(tracerObject);
+        tracer.transform.position = GetPositionFromArrayAt(0);
+        tracer.transform.parent = this.transform;
+    }
+    void DestroyTracerObject()
+    {
+        Destroy(tracer);
     }
 }
 
