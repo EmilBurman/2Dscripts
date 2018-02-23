@@ -54,8 +54,8 @@ public class BasicMovement : MonoBehaviour, IMovement
             // Check if going left
             if (rigidbody2D.velocity.x < 0)
                 rigidbody2D.AddForce(vector2Left * (moveSpeed * sprintForceMultiplier), ForceMode2D.Force);
-
-            rigidbody2D.AddForce(vector2Right * (moveSpeed * sprintForceMultiplier), ForceMode2D.Force);
+            else
+                rigidbody2D.AddForce(vector2Right * (moveSpeed * sprintForceMultiplier), ForceMode2D.Force);
             actionState.Sprinting = true;
             stamina.LoseStamina(staminaLoss);
         }

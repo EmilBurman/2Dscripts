@@ -23,17 +23,17 @@ public class ProjectileAttack : MonoBehaviour, IAttack
                     switch (projectileDirection)
                     {
                         case Directions.Right:
-                            offset.x += 0.7f;
+                            offset.x += offsetDistance;
                             projectile = Instantiate(projectilePrefab, offset, Quaternion.Euler(0, 180, 0));
                             projectile.GetComponent<IProjectile>().SetDirection(Directions.Right);
                             break;
                         case Directions.Left:
-                            offset.x -= 0.7f;
+                            offset.x -= offsetDistance;
                             projectile = Instantiate(projectilePrefab, offset, Quaternion.Euler(0, 180, 0));
                             projectile.GetComponent<IProjectile>().SetDirection(Directions.Left);
                             break;
                         case Directions.Up:
-                            offset.y += 0.7f;
+                            offset.y += offsetDistance;
                             projectile = Instantiate(projectilePrefab, offset, Quaternion.Euler(0, 180, 0));
                             projectile.GetComponent<IProjectile>().SetDirection(Directions.Up);
                             break;
@@ -99,6 +99,7 @@ public class ProjectileAttack : MonoBehaviour, IAttack
     public float attackCooldown;                                // Sets the cooldown of the dash in seconds.
     public GameObject projectilePrefab;                         // The projectile to launch.
     public bool knockback;                                      // If the entity should get knockedback with every shot.
+    public float offsetDistance;
 
     //Projectile prefab
     GameObject projectile;
@@ -132,28 +133,28 @@ public class ProjectileAttack : MonoBehaviour, IAttack
                     switch (projectileDirection)
                     {
                         case Directions.Right:
-                            offset.x += 0.7f;
+                            offset.x += offsetDistance;
                             projectile = Instantiate(projectilePrefab, offset, Quaternion.Euler(0, 180, 0));
                             projectile.GetComponent<IProjectile>().SetDirection(Directions.Right);
                             if (knockback)
                                 rigidbody2D.AddForce(Vector2.left * knockbackForce, ForceMode2D.Impulse);
                             break;
                         case Directions.Left:
-                            offset.x -= 0.7f;
+                            offset.x -= offsetDistance;
                             projectile = Instantiate(projectilePrefab, offset, Quaternion.Euler(0, 180, 0));
                             projectile.GetComponent<IProjectile>().SetDirection(Directions.Left);
                             if (knockback)
                                 rigidbody2D.AddForce(Vector2.right * knockbackForce, ForceMode2D.Impulse);
                             break;
                         case Directions.Up:
-                            offset.y += 0.7f;
+                            offset.y += offsetDistance;
                             projectile = Instantiate(projectilePrefab, offset, Quaternion.Euler(0, 180, 0));
                             projectile.GetComponent<IProjectile>().SetDirection(Directions.Up);
                             if (knockback)
                                 rigidbody2D.AddForce(Vector2.down * knockbackForce, ForceMode2D.Impulse);
                             break;
                         case Directions.Down:
-                            offset.y -= 0.7f;
+                            offset.y -= offsetDistance;
                             projectile = Instantiate(projectilePrefab, offset, Quaternion.Euler(0, 180, 0));
                             projectile.GetComponent<IProjectile>().SetDirection(Directions.Down);
                             if (knockback)
