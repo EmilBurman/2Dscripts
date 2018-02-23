@@ -48,9 +48,7 @@ public class BasicMovement : MonoBehaviour, IMovement
         SetCanWallRide(true);
         rigidbody2D.velocity = new Vector2(horizontalAxis * moveSpeed, rigidbody2D.velocity.y);
 
-        StaminaGainCheck(sprint);
-
-        //Sprint
+        //Sprinting or not
         if (sprint && !stamina.StaminaRecharging() && rigidbody2D.velocity.x != 0)
         {
             // Check if going left
@@ -62,7 +60,10 @@ public class BasicMovement : MonoBehaviour, IMovement
             stamina.LoseStamina(staminaLoss);
         }
         else
+        {
             actionState.Sprinting = false;
+            stamina.EarnStamina(staminaGain);
+        }
 
         //Set idle
         if (rigidbody2D.velocity.x == 0f && horizontalAxis == 0 && actionState.Idle == false)
@@ -124,10 +125,5 @@ public class BasicMovement : MonoBehaviour, IMovement
         //Checks all movement and clamps it.
         if (rigidbody2D.velocity.sqrMagnitude > moveSpeed * 1.2f)
             rigidbody2D.velocity *= 0.97f;
-    }
-    void StaminaGainCheck(bool sprint)
-    {
-        if (!sprint && !stamina.StaminaRecharging())
-            stamina.EarnStamina(staminaGain);
     }
 }

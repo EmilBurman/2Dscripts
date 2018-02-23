@@ -71,12 +71,8 @@ public class DashMultiDirection : MonoBehaviour, IDash
                 //Remove the invulnerability after a short delay
                 Invoke("DelayedVulnerability", 0.1f);
                 //Set the cooldown
-                dashCooldownTimer += Time.deltaTime * 3;
-                if (dashCooldownTimer >= dashCooldownLimit)
-                {
-                    dashCooldownTimer = dashCooldownLimit;
-                    dashState = DashState.Cooldown;
-                }
+                dashCooldownTimer = dashCooldownLimit;
+                dashState = DashState.Cooldown;
                 break;
             case DashState.Cooldown:
                 dashCooldownTimer -= Time.deltaTime;
@@ -96,7 +92,7 @@ public class DashMultiDirection : MonoBehaviour, IDash
         float time = 0f;
 
         //we call this loop every frame while our custom boostDuration is a higher value than the "time" variable in this coroutine
-        while (boostDur > time) 
+        while (boostDur > time)
         {
             //Make the entity invulnerable while dashing
             invulnerableState.Invulnerable(true);

@@ -131,6 +131,7 @@ public class BasicTimeControll : MonoBehaviour, ITimeControll
             case TimeState.Reversing:
                 // Set the cooldown and initate cooldown state.
                 invulnerableState.Invulnerable(false);
+                //Set the cooldown
                 reverseTimer = reverseCooldownLimit;
                 timeState = TimeState.Cooldown;
                 break;
